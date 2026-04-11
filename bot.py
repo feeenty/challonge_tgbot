@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from chyllonge.api import ChallongeApi
 
 load_dotenv()
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHALLONGE_USER = os.getenv("CHALLONGE_USER")
 CHALLONGE_KEY = os.getenv("CHALLONGE_KEY")
@@ -15,6 +16,8 @@ CHALLONGE_KEY = os.getenv("CHALLONGE_KEY")
 api = ChallongeApi()
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
+users_ttext = []
 
 
 def create_button():
@@ -31,15 +34,31 @@ async def create_tournament(msg: types.Message):
 async def on_create(callback: types.CallbackQuery):
     await callback.answer()
 
-    tournament = api.tournaments.create(
-        name="TP1",
-        tournament_type="single elimination"
-    )
+    user_id = callback.from_user.id
+    users_ttext.append(user_id)
 
-    await callback.message.edit_text(
-        f"Турнир [ТР1]({tournament['full_challonge_url']}) создан",
-        parse_mode="Markdown"
-    )
+    await callback.message.edit_text("Введите название турнира")
+
+
+@dp.message()
+async def handle_text(msg: types.Message):
+    user_id = msg.from_user.id
+
+    if user_id in users_ttext:
+        tournament_name = msg.text
+
+        if len(tournament_name) > 60:
+            await msg.answer("Название слишком длинное (максимум 60 символов)")
+            return
+
+        tournament = api.tournaments.create(
+            name=tournament_name,
+            tournament_type="single elimination"
+        )
+
+        await msg.answer(f"Турнир [{tournament_name}]({tournament['full_challonge_url']}) успешно создан")
+
+        del users_ttext[users_ttext.index(user_id)]
 
 
 @dp.message(Command("tournaments"))
