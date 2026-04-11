@@ -72,7 +72,7 @@ async def handle_tournament_name(msg: types.Message):
         del user_state[user_id]
 
 
-@dp.callback_query(F.data.startwith("add_player_"))
+@dp.callback_query(F.data.startswith("add_player_"))
 async def add_player(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     tournament_id = callback.data.split("_")[2]
@@ -98,7 +98,7 @@ async def handle_nickname(msg: types.Message):
         del user_state[user_id]
 
 
-@dp.callback_query(F.data.startwith("add_more_"))
+@dp.callback_query(F.data.startswith("add_more_"))
 async def add_more(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     tournament_id = callback.data.split("_")[2]
