@@ -39,9 +39,9 @@ async def tournaments(msg: types.Message):
             status = "🔄В процессе"
         elif state == "complete":
             status = "🏁Завершён"
-        await msg.answer(f"**{tournament.name}**\n"
+        await msg.answer(f"**{tournament['name']}**\n"
                          f"Статус - {status}\n"
-                         f"[Ссылка]({tournament.full_challonge_url})")
+                         f"[Ссылка]({tournament['full_challonge_url']})")
 
 
 async def main():
