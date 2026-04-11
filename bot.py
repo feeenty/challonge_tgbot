@@ -87,7 +87,7 @@ async def add_player(callback: types.CallbackQuery):
 async def handle_nickname(msg: types.Message):
     user_id = msg.from_user.id
 
-    if user_id in user_state and user_state[user_id] == "nickname":
+    if user_id in user_state and user_state[user_id]["action"] == "nickname":
         nickname = msg.text
         tournament_id = user_state[user_id]["tournament_id"]
 
@@ -109,7 +109,7 @@ async def add_more(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@dp.callback_query(F.data.startwith("finish_adding_"))
+@dp.callback_query(F.data.startswith("finish_adding_"))
 async def finish_adding(callback: types.CallbackQuery):
     tournament_id = callback.data.split("_")[2]
 
