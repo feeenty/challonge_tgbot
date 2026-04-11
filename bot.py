@@ -2,6 +2,8 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
+from aiogram import F
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from dotenv import load_dotenv
 from chyllonge.api import ChallongeApi
 
@@ -15,16 +17,29 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 
-@dp.message(Command("start"))
-async def start(msg: types.Message):
-    await msg.answer("Привет!")
+def create_button():
+    buttons = [[InlineKeyboardButton(text="Создать турнир", callback_data="create_tournament")]]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 @dp.message(Command("create_tournament"))
 async def create_tournament(msg: types.Message):
-    tournament = api.tournaments.create(name="T1", tournament_type="single elimination")
-    tournament_url = tournament["full_challonge_url"]
-    await msg.answer(f"{tournament_url}")
+    await msg.answer("Создание турнира", reply_markup=create_button())
+
+
+@dp.callback_query(F.data == "create_tournament")
+async def on_create(callback: types.CallbackQuery):
+    await callback.answer()
+
+    tournament = api.tournaments.create(
+        name="TP1",
+        tournament_type="single elimination"
+    )
+
+    await callback.message.edit_text(
+        f"Турнир [ТР1]({tournament["full_challonge_url"]}) создан",
+        parse_mode="Markdown"
+    )
 
 
 @dp.message(Command("tournaments"))
