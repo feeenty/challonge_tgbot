@@ -31,7 +31,7 @@ async def create_tournament(msg: types.Message):
 async def tournaments(msg: types.Message):
     tournaments_data = api.tournaments.get_all()
     for tournament in tournaments_data:
-        state = tournament.state
+        state = tournament['state']
         status = None
         if state == "pending":
             status = "⏳Ожидает запуска"
