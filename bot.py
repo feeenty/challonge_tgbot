@@ -41,7 +41,8 @@ async def tournaments(msg: types.Message):
             status = "🏁Завершён"
         await msg.answer(f"**{tournament['name']}**\n"
                          f"Статус - {status}\n"
-                         f"[Ссылка]({tournament['full_challonge_url']})")
+                         f"[Ссылка]({tournament['full_challonge_url']})",
+                         parse_mode="Markdown")
 
 
 async def main():
