@@ -80,6 +80,7 @@ async def handler(msg: types.Message):
 
         participants = api.participants.get_all(tournament_id)
         participant_exists = False
+        await msg.answer(f"{participants}")
 
         for p in participants:
             exits_nickname = p["participant"]["name"]
