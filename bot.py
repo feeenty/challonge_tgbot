@@ -31,7 +31,7 @@ async def create_tournament(msg: types.Message):
 async def tournaments(msg: types.Message):
     tournaments_data = api.tournaments.get_all()
     for tournament in tournaments_data:
-        await msg.answer(f"{tournament["tournament"]}")
+        await msg.answer(f"{tournament}")
 
 
 async def main():
