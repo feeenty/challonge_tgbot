@@ -48,10 +48,13 @@ async def create_tournament(msg: types.Message):
 
 
 @dp.message()
-async def handle_tournament_name(msg: types.Message):
+async def handler(msg: types.Message):
     user_id = msg.from_user.id
 
-    if user_id in user_state and user_state[user_id] == "tournament_name":
+    if user_id not in user_state:
+        return
+
+    if user_state[user_id] == "tournament_name":
         tournament_name = msg.text
 
         if len(tournament_name) > 60:
@@ -70,6 +73,16 @@ async def handle_tournament_name(msg: types.Message):
                          reply_markup=tournament_create_control_buttons(tournament_id))
 
         del user_state[user_id]
+        
+    elif user_state[user_id]["action"] == "nickname":
+        nickname = msg.text
+        tournament_id = user_state[user_id]["tournament_id"]
+
+        api.participants.add(tournament_id, name=nickname)
+
+        await msg.answer(f"{nickname} добавлен, хотите добавить ещё участника?",
+                         reply_markup=add_player_buttons(tournament_id))
+        del user_state[user_id]
 
 
 @dp.callback_query(F.data.startswith("add_player_"))
@@ -81,21 +94,6 @@ async def add_player(callback: types.CallbackQuery):
 
     await callback.message.answer("Введите ник участника")
     await callback.answer()
-
-
-@dp.message()
-async def handle_nickname(msg: types.Message):
-    user_id = msg.from_user.id
-
-    if user_id in user_state and user_state[user_id]["action"] == "nickname":
-        nickname = msg.text
-        tournament_id = user_state[user_id]["tournament_id"]
-
-        api.participants.add(tournament_id, name=nickname)
-
-        await msg.answer(f"{nickname} добавлен, хотите добавить ещё участника?",
-                         reply_markup=add_player_buttons(tournament_id))
-        del user_state[user_id]
 
 
 @dp.callback_query(F.data.startswith("add_more_"))
