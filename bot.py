@@ -56,7 +56,8 @@ async def handle_text(msg: types.Message):
             tournament_type="single elimination"
         )
 
-        await msg.answer(f"Турнир [{tournament_name}]({tournament['full_challonge_url']}) успешно создан")
+        await msg.answer(f"Турнир [{tournament_name}]({tournament['full_challonge_url']}) успешно создан",
+                         parse_mode="Markdown")
 
         del users_ttext[users_ttext.index(user_id)]
 
