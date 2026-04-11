@@ -37,7 +37,7 @@ async def on_create(callback: types.CallbackQuery):
     )
 
     await callback.message.edit_text(
-        f"Турнир [ТР1]({tournament["full_challonge_url"]}) создан",
+        f"Турнир [ТР1]({tournament['full_challonge_url']}) создан",
         parse_mode="Markdown"
     )
 
