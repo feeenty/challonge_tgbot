@@ -8,7 +8,7 @@ from chyllonge.api import ChallongeApi
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHALLONGE_USER = os.getenv("CHALLONGE_USER")
-CHALLONGE_API_KEY = os.getenv("CHALLONGE_API_KEY")
+CHALLONGE_KEY = os.getenv("CHALLONGE_KEY")
 
 api = ChallongeApi()
 bot = Bot(token=BOT_TOKEN)
