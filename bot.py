@@ -24,7 +24,6 @@ async def start(msg: types.Message):
 async def create_tournament(msg: types.Message):
     tournament = api.tournaments.create(name="T1", tournament_type="single elimination")
     tournament_url = tournament["full_challonge_url"]
-    print(tournament["id"], tournament_url)
     await msg.answer(f"{tournament_url}")
 
 
@@ -32,8 +31,17 @@ async def create_tournament(msg: types.Message):
 async def tournaments(msg: types.Message):
     tournaments_data = api.tournaments.get_all()
     for tournament in tournaments_data:
-        print(tournament)
-        await msg.answer(f"{tournament}")
+        state = tournament.state
+        status = None
+        if state == "pending":
+            status = "⏳Ожидает запуска"
+        elif state == "underway":
+            status = "🔄В процессе"
+        elif state == "complete":
+            status = "🏁Завершён"
+        await msg.answer(f"**{tournament.name}**\n"
+                         f"Статус - {status}\n"
+                         f"[Ссылка]({tournament.full_challonge_url})")
 
 
 async def main():
