@@ -17,34 +17,41 @@ api = ChallongeApi()
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-users_ttext = []
+user_state = {}
 
 
-def create_button():
-    buttons = [[InlineKeyboardButton(text="Создать турнир", callback_data="create_tournament")]]
+def tournament_create_control_buttons(tournament_id):
+    buttons = [
+        [InlineKeyboardButton(text="Запустить турнир", callback_data=f"start_tournament_{tournament_id}")],
+        [InlineKeyboardButton(text="Добавить участника", callback_data=f"add_player_{tournament_id}")],
+        [InlineKeyboardButton(text="Настройки", callback_data=f"settings_{tournament_id}")]
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def add_player_buttons(tournament_id):
+    buttons = [
+        [InlineKeyboardButton(text="Добавить ещё", callback_data=f"add_more_{tournament_id}")],
+        [InlineKeyboardButton(text="Закончить", callback_data=f"finish_adding_{tournament_id}")]
+    ]
+
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 @dp.message(Command("create_tournament"))
 async def create_tournament(msg: types.Message):
-    await msg.answer("Создание турнира", reply_markup=create_button())
+    user_id = msg.from_user.id
+    user_state[user_id] = "tournament_name"
 
-
-@dp.callback_query(F.data == "create_tournament")
-async def on_create(callback: types.CallbackQuery):
-    await callback.answer()
-
-    user_id = callback.from_user.id
-    users_ttext.append(user_id)
-
-    await callback.message.edit_text("Введите название турнира")
+    await msg.answer("Введите название турнира")
 
 
 @dp.message()
-async def handle_text(msg: types.Message):
+async def handle_tournament_name(msg: types.Message):
     user_id = msg.from_user.id
 
-    if user_id in users_ttext:
+    if user_id in user_state and user_state[user_id] == "tournament_name":
         tournament_name = msg.text
 
         if len(tournament_name) > 60:
@@ -56,10 +63,58 @@ async def handle_text(msg: types.Message):
             tournament_type="single elimination"
         )
 
-        await msg.answer(f"Турнир [{tournament_name}]({tournament['full_challonge_url']}) успешно создан",
-                         parse_mode="Markdown")
+        tournament_id = tournament["id"]
 
-        del users_ttext[users_ttext.index(user_id)]
+        await msg.answer(f"Турнир [{tournament_name}]({tournament['full_challonge_url']}) успешно создан",
+                         parse_mode="Markdown",
+                         reply_markup=tournament_create_control_buttons(tournament_id))
+
+        del user_state[user_id]
+
+
+@dp.callback_query(F.data.startwith("add_player_"))
+async def add_player(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    tournament_id = callback.data.split("_")[2]
+
+    user_state[user_id] = {"action": "nickname", "tournament_id": tournament_id}
+
+    await callback.message.answer("Введите ник участника")
+    await callback.answer()
+
+
+@dp.message()
+async def handle_nickname(msg: types.Message):
+    user_id = msg.from_user.id
+
+    if user_id in user_state and user_state[user_id] == "nickname":
+        nickname = msg.text
+        tournament_id = user_state[user_id]["tournament_id"]
+
+        api.participants.add(tournament_id, name=nickname)
+
+        await msg.answer(f"{nickname} добавлен, хотите добавить ещё участника?",
+                         reply_markup=add_player_buttons(tournament_id))
+        del user_state[user_id]
+
+
+@dp.callback_query(F.data.startwith("add_more_"))
+async def add_more(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    tournament_id = callback.data.split("_")[2]
+
+    user_state[user_id] = {"action": "nickname", "tournament_id": tournament_id}
+
+    await callback.message.answer("Введите имя следующего участника")
+    await callback.answer()
+
+
+@dp.callback_query(F.data.startwith("finish_adding_"))
+async def finish_adding(callback: types.CallbackQuery):
+    tournament_id = callback.data.split("_")[2]
+
+    await callback.message.edit_text("Добавление участников завершено",
+                                     reply_markup=tournament_create_control_buttons(tournament_id))
 
 
 @dp.message(Command("tournaments"))
