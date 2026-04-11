@@ -73,10 +73,23 @@ async def handler(msg: types.Message):
                          reply_markup=tournament_create_control_buttons(tournament_id))
 
         del user_state[user_id]
-        
+
     elif user_state[user_id]["action"] == "nickname":
         nickname = msg.text
         tournament_id = user_state[user_id]["tournament_id"]
+
+        participants = api.participants.get_all(tournament_id)
+        participant_exists = False
+
+        for p in participants:
+            exits_nickname = p["participant"]["name"]
+            if exits_nickname.lower() == nickname.lower():
+                participant_exists = True
+                break
+
+        if participant_exists:
+            await msg.answer(f"Участник с ником {nickname} уже есть в списках")
+            return
 
         api.participants.add(tournament_id, name=nickname)
 
