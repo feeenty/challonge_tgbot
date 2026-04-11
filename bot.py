@@ -83,7 +83,7 @@ async def handler(msg: types.Message):
         await msg.answer(f"{participants}")
 
         for p in participants:
-            exits_nickname = p["participant"]["name"]
+            exits_nickname = p["name"]
             if exits_nickname.lower() == nickname.lower():
                 participant_exists = True
                 break
